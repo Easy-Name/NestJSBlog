@@ -1,5 +1,5 @@
 export const appConfig = () => ({
-  environment: {},
+  environment: process.env.NODE_ENV || 'production',
   database: {
     connectionString: process.env.CONNECTION_STRING || 'localhost',
     synchronize: process.env.DATABASE_SYNC === 'true' ? true : false,

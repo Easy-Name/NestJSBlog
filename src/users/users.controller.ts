@@ -24,7 +24,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
   @Get()
   getUsers() {
-    return 'I am getting all users';
+    return this.usersService.findAll();
   }
 
   @Get(':id')
@@ -64,7 +64,7 @@ export class UsersController {
     console.log(page);
     console.log(headers);
     console.log(ip);
-    return 'I am getting users by ID';
+    return this.usersService.findOneById(getUsersParamDto.id);
   }
 
   @Post()

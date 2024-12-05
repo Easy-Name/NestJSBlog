@@ -1,4 +1,9 @@
-import { Body, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Injectable,
+  RequestTimeoutException,
+} from '@nestjs/common';
 import { Post } from './posts.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -112,11 +117,36 @@ export class PostsService {
   }
 
   public async update(patchPostDto: PatchPostDto) {
-    //FIND THE TAGS
-    const tags = await this.tagsService.findMultipleTags(patchPostDto.tags);
+    let tags = undefined;
+    let post = undefined;
 
-    //FIND THE POST
-    const post = await this.postsRepository.findOneBy({ id: patchPostDto.id });
+    //FIND THE
+    try {
+      tags = await this.tagsService.findMultipleTags(patchPostDto.tags);
+    } catch (error) {
+      throw new RequestTimeoutException(
+        'Unable to process your request at the moment, please try later',
+      );
+    }
+
+    if (!tags || tags.length !== patchPostDto.tags.length) {
+      throw new BadRequestException(
+        'Please check your tag Ids and ensure they are correct',
+      );
+    }
+    //FIND THE
+
+    try {
+      post = await this.postsRepository.findOneBy({ id: patchPostDto.id });
+    } catch (error) {
+      throw new RequestTimeoutException(
+        'Unable to process your request at the moment, please try later',
+      );
+    }
+
+    if (!post) {
+      throw new BadRequestException('THe post ID does not exist');
+    }
 
     //UPDATE THE PROPERTIES OF POST
     post.title = patchPostDto.title ?? post.title; // if patchPostDto.title exists, assing it to post.title, if not, maintain the value already there
@@ -131,6 +161,14 @@ export class PostsService {
     //ASSIGN THE NEW TAGS
     post.tags = tags;
     //SAVE THE POST AND RETURN
-    return await this.postsRepository.save(post);
+    try {
+      await this.postsRepository.save(post);
+    } catch (error) {
+      throw new RequestTimeoutException(
+        'Unable to process your request at the moment, please try later',
+      );
+    }
+
+    return post;
   }
 }
