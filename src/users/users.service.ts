@@ -7,12 +7,14 @@ import {
   NotFoundException,
   RequestTimeoutException,
 } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { User } from './user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { isEmpty, isNotEmpty } from 'class-validator';
 import { GetUsersParamDto } from './dto/get-users-param.dto';
+import { UsersCreateManyProvider } from './users-create-many.provider';
+import { CreateManyUsersDto } from './dto/create-many-users.dto';
 
 @Injectable()
 export class UsersService {
@@ -20,6 +22,9 @@ export class UsersService {
     //injecting usersRepository
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+
+    //inject DataSource
+    private readonly usersCreateManyProvider: UsersCreateManyProvider,
   ) {}
 
   public async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
@@ -87,4 +92,8 @@ export class UsersService {
       },
     );
   }
+  public async createMany(createManyUsersDto: CreateManyUsersDto) {
+    return await this.usersCreateManyProvider.createMany(createManyUsersDto);
+  }
+
 }

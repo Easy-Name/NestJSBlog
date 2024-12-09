@@ -12,6 +12,9 @@ import { MetaOption } from 'src/meta-options/meta-option.entity';
 import { UsersService } from 'src/users/users.service';
 import { TagsService } from 'src/tags/tags.service';
 import { PatchPostDto } from './dto/patch-post.dto';
+import { GetPostsDto } from './dto/get-posts.dto';
+import { PaginationProvider } from 'src/common/pagination/pagination.provider';
+import { Paginated } from 'src/common/pagination/interfaces/paginated.interface';
 
 /**
  *Class to perform business operations on posts
@@ -29,6 +32,8 @@ export class PostsService {
     private readonly metaOptionRepository: Repository<MetaOption>,
 
     private readonly tagsService: TagsService,
+
+    private readonly paginationProvider: PaginationProvider,
   ) {}
 
   /*public async create(@Body() createPostDto: CreatePostDto) {
@@ -98,6 +103,19 @@ export class PostsService {
     }*/
       //used for eager loading for certain relationships
       ();
+  }
+
+  public async findById(
+    postQuery: GetPostsDto,
+    userId: number,
+  ): Promise<Paginated<Post>> {
+    return await this.paginationProvider.paginateQuery(
+      {
+        limit: postQuery.limit,
+        page: postQuery.page,
+      },
+      this.postsRepository,
+    );
   }
 
   public async delete(id: number) {

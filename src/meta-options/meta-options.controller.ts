@@ -5,7 +5,6 @@ import {
   Param,
   ParseIntPipe,
   Post,
-  Query,
 } from '@nestjs/common';
 import { MetaOptionsService } from './meta-options.service';
 import { CreateMetaOptionsDto } from './dtos/create-meta-options.dto';
