@@ -12,9 +12,9 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true, //the DTOs that are used to receive requests are received as objects and transformed to a real instance of that DTO In the application
-      transformOptions: {
+      /*transformOptions: {
         enableImplicitConversion: true, //implicitly convert types
-      },
+      },*/
     }),
   );
 
@@ -28,6 +28,9 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
+
+  //enable cors
+  app.enableCors();
 
   await app.listen(process.env.PORT ?? 3000);
 }

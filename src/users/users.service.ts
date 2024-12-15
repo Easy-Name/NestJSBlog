@@ -15,6 +15,9 @@ import { isEmpty, isNotEmpty } from 'class-validator';
 import { GetUsersParamDto } from './dto/get-users-param.dto';
 import { UsersCreateManyProvider } from './users-create-many.provider';
 import { CreateManyUsersDto } from './dto/create-many-users.dto';
+import { CreateUserProvider } from './create-user.provider';
+import { CreateGoogleUserProvider } from './create-google-user.provider';
+import { GoogleUser } from './interfaces/google-user.interface';
 
 @Injectable()
 export class UsersService {
@@ -25,36 +28,12 @@ export class UsersService {
 
     //inject DataSource
     private readonly usersCreateManyProvider: UsersCreateManyProvider,
+    private readonly createUserProvider: CreateUserProvider,
+    private readonly createGoogleUserProvider: CreateGoogleUserProvider,
   ) {}
 
-  public async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
-    let existingUser = undefined;
-
-    try {
-      existingUser = await this.usersRepository.findOne({
-        where: { email: createUserDto.email },
-      });
-    } catch (error) {
-      throw new RequestTimeoutException(
-        'Unable to process your request at the moment, pelase try later',
-        { description: 'Error connecting to the database' },
-      );
-    }
-
-    if (isNotEmpty(existingUser)) {
-      throw new ConflictException('email already in use');
-    }
-
-    try {
-      let newUser = this.usersRepository.create(createUserDto);
-      newUser = await this.usersRepository.save(newUser);
-      return newUser;
-    } catch (error) {
-      throw new RequestTimeoutException(
-        'Unable to process your request at the moment, pelase try later',
-        { description: 'Error connecting to the database' },
-      );
-    }
+  public async createUser(createUserDto: CreateUserDto): Promise<User> {
+    return await this.createUserProvider.createUser(createUserDto);
   }
 
   public async findOneById(id: number) {
@@ -96,4 +75,44 @@ export class UsersService {
     return await this.usersCreateManyProvider.createMany(createManyUsersDto);
   }
 
+  public async findOneByEmail(email: string): Promise<User | undefined> {
+    let user: User | undefined = undefined;
+
+    try {
+      user = await this.usersRepository.findOneBy({ email: email });
+    } catch (error) {
+      throw new RequestTimeoutException(
+        'Unable to process your request at the moment, pelase try later',
+        { description: 'Error connecting to the database' },
+      );
+    }
+
+    if (isEmpty(user)) {
+      throw new NotFoundException('The user does not exist');
+    }
+    return user;
+  }
+
+  public async findOneByGoogleId(googleId: string): Promise<User | undefined> {
+    let user: User | undefined = undefined;
+
+    try {
+      user = await this.usersRepository.findOneBy({ googleId: googleId });
+      //console.log(user);
+    } catch (error) {
+      throw new RequestTimeoutException(
+        'Unable to process your request at the moment, pelase try later',
+        { description: 'Error connecting to the database' },
+      );
+    }
+/*
+    if (isEmpty(user)) {
+      throw new NotFoundException('The user does not exist');
+    }*/
+    return user;
+  }
+
+  public async createGoogleUser(googleUser: GoogleUser){
+    return await this.createGoogleUserProvider.createGoogleUser(googleUser);
+  }
 }

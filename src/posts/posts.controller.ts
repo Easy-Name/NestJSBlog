@@ -14,6 +14,8 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PatchPostDto } from './dto/patch-post.dto';
 import { GetPostsDto } from './dto/get-posts.dto';
+import { ActiveUser } from 'src/auth/decorators/active-user.decorator';
+import { ActiveUserData } from 'src/auth/interfaces/active-user-data.interface';
 
 @Controller('posts')
 @ApiTags('Posts')
@@ -52,8 +54,12 @@ export class PostsController {
     status: 201,
     description: 'You get a 201 response if your post is created successfully',
   })
-  createWithAuthor(@Body() createPostDto: CreatePostDto) {
-    return this.postService.createWithAuthor(createPostDto);
+  createWithAuthor(
+    @Body() createPostDto: CreatePostDto,
+    @ActiveUser() user: ActiveUserData,
+  ) {
+    console.log(user);
+    return this.postService.createWithAuthor(createPostDto, user);
   }
 
   @Patch()

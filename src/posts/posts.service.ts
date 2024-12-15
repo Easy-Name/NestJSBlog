@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Body,
+  ConflictException,
   Injectable,
   RequestTimeoutException,
 } from '@nestjs/common';
@@ -15,6 +16,7 @@ import { PatchPostDto } from './dto/patch-post.dto';
 import { GetPostsDto } from './dto/get-posts.dto';
 import { PaginationProvider } from 'src/common/pagination/pagination.provider';
 import { Paginated } from 'src/common/pagination/interfaces/paginated.interface';
+import { ActiveUserData } from 'src/auth/interfaces/active-user-data.interface';
 
 /**
  *Class to perform business operations on posts
@@ -72,12 +74,28 @@ export class PostsService {
     return newPost;
   }*/
 
-  public async createWithAuthor(@Body() createPostDto: CreatePostDto) {
-    //find author from database based on authorId
-    const author = await this.usersService.findOneById(createPostDto.authorId);
+  public async createWithAuthor(
+    createPostDto: CreatePostDto,
+    activeUser: ActiveUserData,
+  ) {
+    let author = undefined;
+    let tags = undefined;
 
-    //find tags
-    const tags = await this.tagsService.findMultipleTags(createPostDto.tags);
+    try {
+      //find author from database based on authorId
+      author = await this.usersService.findOneById(activeUser.sub);
+
+      //find tags
+      tags = await this.tagsService.findMultipleTags(createPostDto.tags);
+    } catch (error) {
+      throw new RequestTimeoutException(
+        'Could not connect to database, try again later',
+      );
+    }
+
+    if (createPostDto.tags.length != tags.length) {
+      throw new BadRequestException('Please check your tag Ids');
+    }
 
     //Create Post
     let newPost = this.postsRepository.create({
@@ -86,8 +104,14 @@ export class PostsService {
       tags: tags,
     });
 
-    //return post to user
-    newPost = await this.postsRepository.save(newPost);
+    try {
+      //return post to user
+      newPost = await this.postsRepository.save(newPost);
+    } catch (error) {
+      throw new ConflictException(error, {
+        description: 'Ensure post slug is unique and not a duplicate',
+      });
+    }
 
     return newPost;
   }
