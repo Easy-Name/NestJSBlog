@@ -11,11 +11,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { appConfig } from './config/app.config';
 import { PaginationModule } from './common/pagination/pagination.module';
 import { PaginationProvider } from './common/pagination/pagination.provider';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AccessTokenGuard } from 'src/auth/guards/access-token/access-token.guard';
 import jwtConfig from './auth/config/jwt.config';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthenticationGuard } from './auth/guards/authentication/authentication.guard';
+import { DataResponseInterceptor } from './common/interceptors/data-response/data-response.interceptor';
+import { MailModule } from './mail/mail.module';
+import { MailService } from './mail/mail.service';
 
 const ENV = process.env.NODE_ENV;
 
@@ -50,6 +53,7 @@ const ENV = process.env.NODE_ENV;
     PaginationModule,
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),
+    MailModule,
   ],
   controllers: [AppController],
 
@@ -58,6 +62,9 @@ const ENV = process.env.NODE_ENV;
     PaginationProvider,
     { provide: APP_GUARD, useClass: AuthenticationGuard }, //protect the entire APP
     AccessTokenGuard,
+    { provide: APP_INTERCEPTOR, useClass: DataResponseInterceptor },
+    MailService, //apply interceptor globally to APP
+
   ],
 })
 export class AppModule {}

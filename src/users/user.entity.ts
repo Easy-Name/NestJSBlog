@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import { Post } from 'src/posts/posts.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
@@ -16,9 +17,11 @@ export class User {
   email: string;
 
   @Column({ type: 'varchar', length: 96, nullable: true })
+  @Exclude() //from ClassSerializerInterceptor
   password?: string;
 
   @Column({ type: 'varchar', nullable: true })
+  @Exclude() //from ClassSerializerInterceptor
   googleId: string;
 
   @OneToMany(() => Post, (posts) => posts.author)

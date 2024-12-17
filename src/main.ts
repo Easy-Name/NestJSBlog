@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { DataResponseInterceptor } from './common/interceptors/data-response/data-response.interceptor';
 //import * as dotenv from 'dotenv';
 
 async function bootstrap() {
@@ -18,7 +19,7 @@ async function bootstrap() {
     }),
   );
 
-  const config = new DocumentBuilder()
+  const swaggerConfig = new DocumentBuilder()
     .setVersion('1.0')
     .setTitle('NestJS Masterclass - Blog app API')
     .setDescription('Use the base API URL as http://localhost:3000')
@@ -26,7 +27,7 @@ async function bootstrap() {
     .setLicense('MIT License', 'https://www.mit.edu/~amini/LICENSE.md')
     .addServer('http://localhost:3000/')
     .build();
-  const document = SwaggerModule.createDocument(app, config);
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api', app, document);
 
   //enable cors
