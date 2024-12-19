@@ -22,8 +22,8 @@ export class User {
 
   @Column({ type: 'varchar', nullable: true })
   @Exclude() //from ClassSerializerInterceptor
-  googleId: string;
+  googleId?: string;
 
   @OneToMany(() => Post, (posts) => posts.author)
-  posts: Post[];
+  posts?: Post[];
 }
