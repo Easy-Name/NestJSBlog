@@ -81,7 +81,6 @@ export class UsersController {
   //@Auth(AuthType.Bearer)
   @Auth(AuthType.None)
   createUsers(@Body() createUserDto: CreateUserDto) {
-    console.log(createUserDto);
     return this.usersService.createUser(createUserDto);
   }
 
